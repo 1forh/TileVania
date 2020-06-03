@@ -5,7 +5,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField] private float _speed = 3.0f;
-    [SerializeField] private float _jumpHeight = 4.5f;
+    [SerializeField] private float _jumpHeight = 5.5f;
 
     bool isAlive = true;
     

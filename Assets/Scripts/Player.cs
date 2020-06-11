@@ -7,15 +7,18 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speed = 3.0f;
     [SerializeField] private float _jumpHeight = 5.5f;
 
-    bool isAlive = true;
+    private float _gravityScaleAtStart;
     
     private Rigidbody2D _rigidBody;
     private Animator _animator;
+    private CapsuleCollider2D _collider;
 
     private void Start()
     {
         _rigidBody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
+        _collider = GetComponent<CapsuleCollider2D>();
+        _gravityScaleAtStart = _rigidBody.gravityScale;
     }
 
     void Update()
@@ -23,6 +26,7 @@ public class Player : MonoBehaviour
         Run();
         Jump();
         FlipSprite();
+        ClimbLadder();
     }
 
     private void Run()
@@ -38,6 +42,12 @@ public class Player : MonoBehaviour
 
     private void Jump()
     {
+
+        if (!_collider.IsTouchingLayers(LayerMask.GetMask("Ground")))
+        {
+            return;
+        }
+
         var spaceInput = Input.GetKeyDown(KeyCode.Space);
 
 
@@ -56,5 +66,24 @@ public class Player : MonoBehaviour
         {
             transform.localScale = new Vector2(Mathf.Sign(_rigidBody.velocity.x), 1.0f);
         }
+    }
+
+    private void ClimbLadder()
+    {
+        if (!_collider.IsTouchingLayers(LayerMask.GetMask("Ladder")))
+        {
+            _animator.SetBool("Climbing", false);
+            _rigidBody.gravityScale = _gravityScaleAtStart;
+            return;
+        }
+
+        var verticalInput = Input.GetAxis("Vertical");
+        var y = verticalInput * _speed;
+        Vector2 position = new Vector2(_rigidBody.velocity.x, y);
+        _rigidBody.velocity = position;
+        _rigidBody.gravityScale = 0f;
+
+        bool playerHasVerticalSpeed = Mathf.Abs(_rigidBody.velocity.y) > Mathf.Epsilon;
+        _animator.SetBool("Climbing", playerHasVerticalSpeed);
     }
 }
